@@ -1,11 +1,14 @@
 package com.example.ordermanagement.controller;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.example.ordermanagement.OrderDTO.OrderRequest;
 import com.example.ordermanagement.OrderDTO.OrderResponse;
 import com.example.ordermanagement.models.Orders;
+import com.example.ordermanagement.service.CustomerService;
 import com.example.ordermanagement.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,18 +21,28 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @Autowired
+    private CustomerService customerService;
+
     OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 
     // Create Order API
     @PostMapping
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest orderRequest) {
+    public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) {
         Orders order = orderService.createOrder(orderRequest);
+
+        HashMap<String , String > errorResponse = new HashMap<>();
+
+        if(order.getOrderItems().isEmpty()){
+            errorResponse.put("Body" , "Order List Empty, Please Add Something.");
+            errorResponse.put("errorCode" , "ERROR_ORDER_LIST_EMPTY");
+            return new ResponseEntity<>(errorResponse , HttpStatus.BAD_REQUEST);
+        }
 
         // Create a response object
         OrderResponse orderResponse = new OrderResponse("Order Placed", order.getOrderId());
-
         // Return a 200 status with the custom message and orderId
         return new ResponseEntity<>(orderResponse, HttpStatus.OK);
     }

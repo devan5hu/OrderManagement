@@ -17,6 +17,12 @@ public class CustomerController {
     @Autowired
     private CustomerService customerService;
 
+    @PostMapping
+    public ResponseEntity<String> createCustomer(@RequestBody Customer customer) {
+        Customer newCustomer = customerService.createCustomer(customer) ;
+        return new ResponseEntity<>("Customer created with ID: " + newCustomer.getCustomerId(), HttpStatus.CREATED);
+    }
+
     @GetMapping
     public ResponseEntity<List<Customer>> getAllCustomers() {
         return ResponseEntity.ok(customerService.getAllCustomers());
@@ -26,12 +32,6 @@ public class CustomerController {
     public ResponseEntity<Customer> getCustomerById(@PathVariable Long id) {
         Optional<Customer> customer = customerService.getCustomerById(id);
         return customer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<String> createCustomer(@RequestBody Customer customer) {
-        Customer newCustomer = customerService.createCustomer(customer) ;
-        return new ResponseEntity<>("Customer created with ID: " + newCustomer.getCustomerId(), HttpStatus.CREATED);
     }
 
     @DeleteMapping("/{id}")

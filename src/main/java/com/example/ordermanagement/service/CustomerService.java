@@ -1,8 +1,10 @@
 package com.example.ordermanagement.service;
 
+import com.example.ordermanagement.exceptionHandler.GlobalExceptionHandler;
 import com.example.ordermanagement.models.Customer;
 import com.example.ordermanagement.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,9 +18,18 @@ public class CustomerService {
 
     public List<Customer> getAllCustomers() { return customerRepository.findAll(); }
 
-    public Optional<Customer> getCustomerById(Long id) { return customerRepository.findById(id); }
+    public Optional<Customer> getCustomerById(Long id) {
+        return customerRepository.findById(id);
+    }
 
-    public Customer createCustomer(Customer customer) {return customerRepository.save(customer);}
+    public Customer createCustomer(Customer customer) {
+        try {
+            return customerRepository.save(customer);
+        } catch (DataIntegrityViolationException ex) {
+            System.out.println("Duplicate Error Message " + ex.getMessage());
+            throw new IllegalArgumentException(ex.getMessage());
+        }
+    }
 
     public void deleteCustomer(Long customerId) {customerRepository.deleteById(customerId);}
 }

@@ -1,9 +1,6 @@
 package com.example.ordermanagement.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Customer {
@@ -13,6 +10,7 @@ public class Customer {
 
     private String name;
     private String email;
+    @Column(nullable = false , unique = true )
     private String phone;
 
     // Constructors
