@@ -27,20 +27,35 @@ public class OrderItems {
         this.quantity = quantity;
         this.price = price;
     }
+    public Long getOrderItemId() {
+        return orderItemId;
+    }
+    public void setOrderItemId(Long orderItemId) {
+        this.orderItemId = orderItemId;
+    }
+    public Orders getOrder() {
+        return order;
+    }
+    public void setOrder(Orders order) {
+        this.order = order;
+    }
+    public Long getProductId() {
+        return productId;
+    }
+    public void setProductId(Long productId) {
+        this.productId = productId;
+    }
+    public Integer getQuantity() {
+        return quantity;
+    }
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+    public BigDecimal getPrice() {
+        return price;
+    }
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
 
-    // Getters and Setters
-    public Long getOrderItemId() { return orderItemId; }
-    public void setOrderItemId(Long orderItemId) { this.orderItemId = orderItemId; }
-
-    public Orders getOrder() { return order; }
-    public void setOrder(Orders order) { this.order = order; }
-
-    public Long getProductId() { return productId; }
-    public void setProductId(Long productId) { this.productId = productId; }
-
-    public Integer getQuantity() { return quantity; }
-    public void setQuantity(Integer quantity) { this.quantity = quantity; }
-
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
 }

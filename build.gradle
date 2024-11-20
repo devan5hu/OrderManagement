@@ -18,8 +18,6 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot Starter for MongoDB
-    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 
     // Spring Boot Starter for Web (for REST API and controllers)
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -36,8 +34,12 @@ dependencies {
     // Spring Boot Starter for JPA (relational database support)
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // MySQL Connector (optional if you intend to use MySQL as a secondary database)
     runtimeOnly 'com.mysql:mysql-connector-j:8.2.0'
+
+    // MySQL Connector (optional if you intend to use MySQL as a secondary database)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-core'
+    implementation 'org.springframework.security:spring-security-web'
 
     // Testing dependencies
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

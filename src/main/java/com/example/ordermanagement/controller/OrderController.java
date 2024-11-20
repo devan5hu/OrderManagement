@@ -1,6 +1,5 @@
 package com.example.ordermanagement.controller;
 
-import java.util.HashMap;
 import java.util.List;
 
 import com.example.ordermanagement.OrderDTO.OrderRequest;
@@ -12,11 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/orders")
 public class OrderController {
 
     private final OrderService orderService;
@@ -28,22 +26,17 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    // Get All Orders API
+    @GetMapping
+    public ResponseEntity<List<Orders>> getAllOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
     // Create Order API
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestBody OrderRequest orderRequest) {
         Orders order = orderService.createOrder(orderRequest);
-
-        HashMap<String , String > errorResponse = new HashMap<>();
-
-        if(order.getOrderItems().isEmpty()){
-            errorResponse.put("Body" , "Order List Empty, Please Add Something.");
-            errorResponse.put("errorCode" , "ERROR_ORDER_LIST_EMPTY");
-            return new ResponseEntity<>(errorResponse , HttpStatus.BAD_REQUEST);
-        }
-
-        // Create a response object
         OrderResponse orderResponse = new OrderResponse("Order Placed", order.getOrderId());
-        // Return a 200 status with the custom message and orderId
         return new ResponseEntity<>(orderResponse, HttpStatus.OK);
     }
 
@@ -52,12 +45,6 @@ public class OrderController {
     public ResponseEntity<Orders> getOrderById(@PathVariable Long id) {
         Optional<Orders> order = orderService.getOrderById(id);
         return order.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    // Get All Orders API
-    @GetMapping
-    public ResponseEntity<List<Orders>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
     }
 
     // Delete Order API
@@ -71,5 +58,11 @@ public class OrderController {
     public ResponseEntity<List<Orders>> getOrdersByCustomerId(@PathVariable Long customerId) {
         List<Orders> orders = orderService.getOrdersByCustomerId(customerId);
         return orders.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/status/{order_id}")
+    public ResponseEntity<String> getOrderStatusById(@PathVariable Long order_id) {
+        String status = orderService.getOrderStatus(order_id);
+        return new ResponseEntity<>(status , HttpStatus.OK);
     }
 }

@@ -1,32 +1,63 @@
 package com.example.ordermanagement.exceptionHandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.HashMap;
+import static com.example.ordermanagement.constants.ErrorCodes.*;
 
-@ControllerAdvice()
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(DuplicatePhoneException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicatePhoneException(DuplicatePhoneException ex) {
+        logger.error("Duplicate phone number error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), DUPLICATE_PHONE, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCustomerNotFoundException(CustomerNotFoundException ex) {
+        logger.error("Customer not found: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), CUSTOMER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFoundException(OrderNotFoundException ex) {
+        logger.error("Order not found: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), ORDER_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidOrder.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOrder(InvalidOrder ex) {
+        logger.error("Invalid Order: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), INVALID_ORDER, HttpStatus.NOT_FOUND);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException ex) {
-        HashMap<String, String> errorResponse = new HashMap<>();
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        logger.error("Illegal argument exception: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), GENERAL_ERROR, HttpStatus.BAD_REQUEST);
+    }
 
-        if(ex.getMessage().contains("Duplicate entry") && ex.getMessage().contains("phone") ) {
-            errorResponse.put("message", "Phone number already in use. Please use another or login with the same again.");
-            errorResponse.put("errorCode" , "DUPLICATE_PHONE");
-        }
-        else if(ex.getMessage().contains("Customer Not Found")){
-            errorResponse.put("message", "Customer not found please send a valid customer_id");
-            errorResponse.put("errorCode" , "CUSTOMER_NOT_FOUND");
-        }
-        else{
-            errorResponse.put("message", ex.getMessage());
-            errorResponse.put("errorCode" , "GENERAL ERROR");
-        }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneralException(Exception ex) {
+        logger.error("Unexpected exception: {}", ex.getMessage(), ex);
+        return buildErrorResponse("An unexpected error occurred. Please try again.", INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    @ExceptionHandler(DuplicateUsernameException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateUsername(DuplicateUsernameException ex) {
+        logger.error("Duplicate username error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), DUPLICATE_USERNAME, HttpStatus.CONFLICT);
+    }
+
+    private ResponseEntity<ErrorResponse> buildErrorResponse(String message, String errorCode, HttpStatus status) {
+        ErrorResponse errorResponse = new ErrorResponse(message, errorCode);
+        return new ResponseEntity<>(errorResponse, status);
     }
 }

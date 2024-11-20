@@ -2,8 +2,8 @@ package com.example.ordermanagement.OrderDTO;
 
 public class OrderResponse {
 
-    private String status;
-    private Long orderId;
+    private final String status;
+    private final Long orderId;
 
     // Constructors
     public OrderResponse(String status, Long orderId) {
@@ -11,10 +11,11 @@ public class OrderResponse {
         this.orderId = orderId;
     }
 
-    // Getters and Setters
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getStatus() {
+        return status;
+    }
+    public Long getOrderId() {
+        return orderId;
+    }
 
-    public Long getOrderId() { return orderId; }
-    public void setOrderId(Long orderId) { this.orderId = orderId; }
 }

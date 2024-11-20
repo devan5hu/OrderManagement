@@ -36,19 +36,18 @@ public class Orders {
     // Getters and Setters
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
-
     public Customer getCustomer() { return customer; }
+
+
     public void setCustomer(Customer customer) { this.customer = customer; }
 
     public String getStatus() { return status; }
+
     public void setStatus(String status) { this.status = status; }
 
-    public Timestamp getTimestamp() { return timestamp; }
     public void setTimestamp(Timestamp timestamp) { this.timestamp = timestamp; }
 
-    public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
-    public List<OrderItems> getOrderItems() { return orderItems; }
     public void setOrderItems(List<OrderItems> orderItems) { this.orderItems = orderItems; }
 }

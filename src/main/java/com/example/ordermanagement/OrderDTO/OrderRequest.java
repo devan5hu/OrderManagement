@@ -20,31 +20,16 @@ public class OrderRequest {
     public BigDecimal getTotalAmount() {
         return totalAmount;
     }
-    public void setTotalAmount(BigDecimal totalAmount) {
-        this.totalAmount = totalAmount;
-    }
+
     public Long getCustomerId() {
         return customerId;
     }
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
-    }
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
+
     public Timestamp getTimestamp() {
         return timestamp;
     }
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
-    }
+
     public List<OrderItemRequest> getOrderItems() {
         return orderItems;
-    }
-    public void setOrderItems(List<OrderItemRequest> orderItems) {
-        this.orderItems = orderItems;
     }
 }
