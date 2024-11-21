@@ -1,12 +1,12 @@
 package com.example.ordermanagement.OrderDTO;
 
-public class OrderResponse {
+public class OrderStatusResponse {
 
     private final String status;
     private final Long orderId;
 
     // Constructors
-    public OrderResponse(String status, Long orderId) {
+    public OrderStatusResponse(String status, Long orderId) {
         this.status = status;
         this.orderId = orderId;
     }

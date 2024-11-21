@@ -1,5 +1,7 @@
 package com.example.ordermanagement.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.math.BigDecimal;
@@ -14,13 +16,15 @@ public class Orders {
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)
+    @JsonIgnore
     private Customer customer;
 
     private String status;
     private Timestamp timestamp;
     private BigDecimal totalAmount;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<OrderItems> orderItems;  // List of order items
 
     // Constructors
@@ -37,17 +41,21 @@ public class Orders {
     public Long getOrderId() { return orderId; }
     public void setOrderId(Long orderId) { this.orderId = orderId; }
     public Customer getCustomer() { return customer; }
-
-
     public void setCustomer(Customer customer) { this.customer = customer; }
-
     public String getStatus() { return status; }
-
     public void setStatus(String status) { this.status = status; }
-
+    public Timestamp getTimestamp() { return timestamp; }
     public void setTimestamp(Timestamp timestamp) { this.timestamp = timestamp; }
-
+    public BigDecimal getTotalAmount() { return totalAmount; }
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
 
-    public void setOrderItems(List<OrderItems> orderItems) { this.orderItems = orderItems; }
+    // Getter for orderItems
+    public List<OrderItems> getOrderItems() {
+        return orderItems;
+    }
+
+    // Setter for orderItems
+    public void setOrderItems(List<OrderItems> orderItems) {
+        this.orderItems = orderItems;
+    }
 }

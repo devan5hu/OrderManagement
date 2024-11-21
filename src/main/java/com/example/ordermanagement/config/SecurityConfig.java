@@ -21,20 +21,12 @@ public class SecurityConfig {
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // contentSecurityConfig(http); to do
-
-        // Define AntPathRequestMatcher for the routes you want to permit
-        // AntPathRequestMatcher[] requestMatchers = getAntPathRequestMatchers();
-
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        // Permit all on these paths
                         .requestMatchers(new AntPathRequestMatcher("/api/customers")).permitAll()
-                        // All other requests must be authenticated
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());
@@ -42,9 +34,8 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // Define any custom security configurations, such as CORS, headers, etc.
+    // todo add important headers
     private void contentSecurityConfig(HttpSecurity http) throws Exception {
-        // Example of adding custom headers or content security policies, if needed
         http
                 .headers((header) -> header
                         .contentTypeOptions(withDefaults())
@@ -54,7 +45,6 @@ public class SecurityConfig {
                 );
     }
 
-    // Define the path matchers (for specific APIs you want to make publicly available)
     private AntPathRequestMatcher[] getAntPathRequestMatchers() {
         return new AntPathRequestMatcher[] {
                 new AntPathRequestMatcher("/api/customers", HttpMethod.POST.name())

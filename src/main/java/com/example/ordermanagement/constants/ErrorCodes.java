@@ -8,4 +8,9 @@ public class ErrorCodes {
     public static final String GENERAL_ERROR = "GENERAL_ERROR";
     public static final String DUPLICATE_USERNAME = "DUPLICATE_USERNAME";
     public static final String INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR";
+    public static final String ACCESS_DENIED_ERROR = "ACCESS_DENIED_ERROR";
+    public static final String ORDER_SHIPPED_ERROR = "ORDER_SHIPPED_ERROR";
+    public static final String ACTION_FAILED = "FAILED";
+    public static final String ACTION_SUCCESS = "SUCCESS";
+
 }
