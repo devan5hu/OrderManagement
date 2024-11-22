@@ -1,10 +1,10 @@
 package com.example.ordermanagement.exceptionHandler;
 
+import com.example.ordermanagement.DTO.LoginResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -16,9 +16,9 @@ public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(DuplicatePhoneException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicatePhoneException(DuplicatePhoneException ex) {
-        logger.error("Duplicate phone number error: {}", ex.getMessage());
-        return buildErrorResponse(ex.getMessage(), DUPLICATE_PHONE, HttpStatus.CONFLICT);
+    public ResponseEntity<LoginResponse> handleDuplicatePhoneException(DuplicatePhoneException ex) {
+        LoginResponse errorResponse = new LoginResponse(ACTION_FAILED, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(CustomerNotFoundException.class)
@@ -46,9 +46,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DuplicateUsernameException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateUsername(DuplicateUsernameException ex) {
-        logger.error("Duplicate username error: {}", ex.getMessage());
-        return buildErrorResponse(ex.getMessage(), DUPLICATE_USERNAME, HttpStatus.CONFLICT);
+    public ResponseEntity<LoginResponse> handleDuplicateUsernameException(DuplicateUsernameException ex) {
+        LoginResponse errorResponse = new LoginResponse(ACTION_FAILED, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -56,11 +56,22 @@ public class GlobalExceptionHandler {
         logger.error("No permission error: {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), ACCESS_DENIED_ERROR , HttpStatus.FORBIDDEN);
     }
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentialsException(InvalidCredentialsException ex) {
+        logger.error("Invalid Credentials error: {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), INVALID_CREDENTIALS , HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(InvalidActionUpdateOrder.class)
     public ResponseEntity<ErrorResponse> handleInvalidActionUpdateOrder(InvalidActionUpdateOrder ex) {
         logger.error("Invalid Action Order cannot be modified: {}", ex.getMessage());
         return buildErrorResponse(ex.getMessage(), ORDER_SHIPPED_ERROR , HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTokenException(InvalidTokenException ex) {
+        logger.error("Invalid Token error : {}", ex.getMessage());
+        return buildErrorResponse(ex.getMessage(), INVALID_TOKEN , HttpStatus.BAD_REQUEST);
     }
 
     // Order has already been shipped and cannot be modified.

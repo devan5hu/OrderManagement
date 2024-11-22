@@ -1,53 +1,44 @@
 package com.example.ordermanagement.config;
 
+import com.example.ordermanagement.auth.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig{
 
-    private final UserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     }
+
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(new AntPathRequestMatcher("/api/customers")).permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/login" , "/api/register", "/error").permitAll() // Open the register endpoint
+                        .anyRequest().authenticated() // Protect all other endpoints
                 )
-                .httpBasic(withDefaults());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling((exception) ->exception.accessDeniedPage("/error/404"));
 
         return http.build();
     }
 
-    // todo add important headers
-    private void contentSecurityConfig(HttpSecurity http) throws Exception {
-        http
-                .headers((header) -> header
-                        .contentTypeOptions(withDefaults())
-                        .xssProtection(withDefaults())
-                        .cacheControl(withDefaults())
-                        .frameOptions(withDefaults())
-                );
-    }
-
-    private AntPathRequestMatcher[] getAntPathRequestMatchers() {
-        return new AntPathRequestMatcher[] {
-                new AntPathRequestMatcher("/api/customers", HttpMethod.POST.name())
-        };
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

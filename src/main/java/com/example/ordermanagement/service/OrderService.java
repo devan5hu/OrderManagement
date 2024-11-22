@@ -1,7 +1,8 @@
 package com.example.ordermanagement.service;
 
-import com.example.ordermanagement.OrderDTO.OrderItemRequest;
-import com.example.ordermanagement.OrderDTO.OrderRequest;
+import com.example.ordermanagement.DTO.OrderItemRequest;
+import com.example.ordermanagement.DTO.OrderRequest;
+import com.example.ordermanagement.config.AsyncConfig;
 import com.example.ordermanagement.exceptionHandler.*;
 import com.example.ordermanagement.models.Customer;
 import com.example.ordermanagement.models.OrderItems;
@@ -11,13 +12,13 @@ import com.example.ordermanagement.repository.OrderRepository;
 import com.example.ordermanagement.models.Orders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,13 @@ public class OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
-    public Orders createOrder(OrderRequest orderRequest, String username) {
+    @Autowired
+    private AsyncConfig asyncConfig;
+    /**
+     Create New Order
+     */
+    @Async("asyncExecutor")
+    public CompletableFuture<Orders> createOrder(OrderRequest orderRequest, String username) {
         try {
             Customer authenticatedCustomer = customerRepository.findByUsername(username)
                     .orElseThrow(() -> new CustomerNotFoundException("Authenticated customer not found"));
@@ -44,7 +51,7 @@ public class OrderService {
 
             Orders order = new Orders();
             order.setCustomer(authenticatedCustomer);
-            order.setStatus(ORDER_PLACED);
+            order.setStatus("SHIPPED"); // Change to Shipping or Delivered for testing.
             order.setTimestamp(orderRequest.getTimestamp());
             order.setTotalAmount(orderRequest.getTotalAmount());
 
@@ -52,26 +59,36 @@ public class OrderService {
                     .map(itemRequest -> new OrderItems(order, itemRequest.getProductId(),
                             itemRequest.getQuantity(), itemRequest.getPrice()))
                     .collect(Collectors.toList());
-
             order.setOrderItems(orderItems);
 
-            return orderRepository.save(order);
+            Orders savedOrder = orderRepository.save(order);
+
+            return CompletableFuture.completedFuture(savedOrder);
         } catch (DataIntegrityViolationException e) {
+            System.out.println("Data integrity violation: " + e.getMessage());
             throw new InvalidOrder("Unable to save order. Please check the provided data.");
         }
     }
 
-    public List<Orders> getOrdersByCustomerUsername(String username) {
+    /**
+     * fetch all Orders By Customer Username
+     */
+    @Async
+    public CompletableFuture<List<Orders>> getOrdersByCustomerUsername(String username) {
         Customer customer = customerRepository.findByUsername(username)
                 .orElseThrow(() -> new CustomerNotFoundException("Customer not found with username: " + username));
 
-        return orderRepository.findByCustomerCustomerId(customer.getCustomerId());
+        return CompletableFuture.completedFuture(orderRepository.findByCustomerCustomerId(customer.getCustomerId()));
     }
 
-    public String getOrderStatusForUser(Long orderId, String username) {
+    /**
+     * Fetch a Particular Order's status by its ID
+     */
+    @Async
+    public CompletableFuture<String> getOrderStatusForUser(Long orderId, String username) {
 
         Customer customer = customerRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("Customer not found with username: " + username));
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with username: " + username));
 
         Orders order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
@@ -80,13 +97,16 @@ public class OrderService {
             throw new AccessDeniedException("You do not have permission to access this order.");
         }
 
-        return order.getStatus();
+        return CompletableFuture.completedFuture(order.getStatus());
     }
 
-    public Orders updateOrder(Long orderId, OrderRequest orderRequest, String username) {
+    /**
+     * Update the Order (OrderItems, amount, quantity and so on)
+     */
+    public CompletableFuture<Orders> updateOrder(Long orderId, OrderRequest orderRequest, String username) {
 
         Orders existingOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order with ID " + orderId + " not found"));
+                .orElseThrow(() -> new InvalidOrder("Order with ID " + orderId + " not found"));
 
         if (!existingOrder.getCustomer().getUsername().equals(username)) {
             throw new AccessDeniedException("You are not authorized to update this order.");
@@ -99,9 +119,34 @@ public class OrderService {
         validateOrderRequest(orderRequest);
         updateOrderDetails(existingOrder, orderRequest);
 
-        return orderRepository.save(existingOrder);
+        return CompletableFuture.completedFuture(orderRepository.save(existingOrder));
     }
 
+    /**
+     * cancel and Delete Order (Better approach would have been to archive them and keep them stored for later use)
+     */
+    public CompletableFuture<Boolean> cancelAndDeleteOrder(Long orderId, String username) {
+        Orders existingOrder = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order with ID " + orderId + " not found"));
+        if (!existingOrder.getCustomer().getUsername().equals(username)) {
+            throw new AccessDeniedException("You are not authorized to cancel and delete this order.");
+        }
+
+        if (ORDER_SHIPPED.equals(existingOrder.getStatus()) || ORDER_DELIVERED.equals(existingOrder.getStatus())) {
+            throw new InvalidActionDeleteOrder("Order cannot be cancelled as it has already been processed or shipped.");
+        }
+
+        List<OrderItems> orderItems = existingOrder.getOrderItems();
+
+        orderItemRepository.deleteAll(orderItems);
+        orderRepository.delete(existingOrder);
+        return CompletableFuture.completedFuture(true);
+    }
+
+
+    /**
+     Validate The order Request
+     */
     private void validateOrderRequest(OrderRequest orderRequest) {
         if (orderRequest.getOrderItems() == null || orderRequest.getOrderItems().isEmpty()) {
             throw new InvalidOrder("Order items cannot be empty");
@@ -126,6 +171,9 @@ public class OrderService {
         }
     }
 
+    /**
+     update Order Details (if there is a change in order_items)
+     */
     private void updateOrderDetails(Orders existingOrder, OrderRequest orderRequest) {
         Map<Long, OrderItemRequest> requestItemsMap = orderRequest.getOrderItems().stream()
                 .collect(Collectors.toMap(OrderItemRequest::getProductId, Function.identity()));
@@ -142,6 +190,9 @@ public class OrderService {
         existingOrder.setTimestamp(orderRequest.getTimestamp());
     }
 
+    /**
+     fetch OrderItems from the request
+     */
     private static List<OrderItems> getOrderItems(Orders existingOrder, Map<Long, OrderItemRequest> requestItemsMap) {
         List<OrderItems> existingItems = existingOrder.getOrderItems();
 
@@ -159,21 +210,4 @@ public class OrderService {
         return existingItems;
     }
 
-    public void cancelAndDeleteOrder(Long orderId, String username) {
-        Orders existingOrder = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("Order with ID " + orderId + " not found"));
-
-        if (!existingOrder.getCustomer().getUsername().equals(username)) {
-            throw new AccessDeniedException("You are not authorized to cancel and delete this order.");
-        }
-
-        if (ORDER_SHIPPED.equals(existingOrder.getStatus()) || ORDER_DELIVERED.equals(existingOrder.getStatus())) {
-            throw new InvalidActionDeleteOrder("Order cannot be cancelled as it has already been processed or shipped.");
-        }
-
-        List<OrderItems> orderItems = existingOrder.getOrderItems();
-
-        orderItemRepository.deleteAll(orderItems);
-        orderRepository.delete(existingOrder);
-    }
 }

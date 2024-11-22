@@ -1,4 +1,4 @@
-package com.example.ordermanagement.OrderDTO;
+package com.example.ordermanagement.DTO;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
