@@ -63,7 +63,7 @@ Java HotSpot(TM) 64-Bit Server VM (build 23.0.1+11-39, mixed mode, sharing)
 ### Clone the repository:
 ```bash
 git clone https://github.com/devan5hu/OrderManagement
-cd OrderManagementSystem
+cd OrderManagement
 ```
 
 Run the Docker Desktop simultaneously for MySQL integrations and have the Apache Tomcat Server Installed.
