@@ -44,15 +44,31 @@ The objective is to design a scalable and highly available backend system for an
 
 ## How to Run
 
+### JDK Version Required: 
+
+Ensure you have Java(TM) SE Runtime Environment version 23.0.1 or higher installed on your system.
+You can verify your Java version using the following command:
+
+```
+java -version
+```
+
+### Expected Output:
+```
+java version "23.0.1" 2024-10-15
+Java(TM) SE Runtime Environment (build 23.0.1+11-39)
+Java HotSpot(TM) 64-Bit Server VM (build 23.0.1+11-39, mixed mode, sharing)
+```
+
 ### Clone the repository:
 ```bash
 git clone https://github.com/devan5hu/OrderManagement
-cd OrderManagementSystem
+cd OrderManagement
 ```
 
-Run using docker
+Run the Docker Desktop simultaneously for MySQL integrations and have the Apache Tomcat Server Installed.
+Open it on the IDE of your choice and run it or execute the following command after navigating to the root folder.
 
 ```bash
-docker build -t order-management-system .
-docker run -p 8080:8080 order-management-system
+  .\gradlew bootRun
 ```
