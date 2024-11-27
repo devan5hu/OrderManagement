@@ -1,7 +1,9 @@
 package com.example.ordermanagement.auth;
 
+import com.example.ordermanagement.exceptionHandler.ErrorResponse;
 import com.example.ordermanagement.exceptionHandler.InvalidTokenException;
 import com.example.ordermanagement.service.CustomerService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,8 +44,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         }catch (InvalidTokenException e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden for invalid token
-            response.getWriter().write(INVALID_TOKEN);
-            response.getWriter().write("Invalid or Expired Token");
+            ErrorResponse responseObj = new ErrorResponse("Invalid or Expired Token", INVALID_TOKEN);
+            String json = new ObjectMapper().writeValueAsString(responseObj);
+            response.getWriter().write(json);
             response.getWriter().flush();
         }
     }

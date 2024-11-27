@@ -51,7 +51,7 @@ public class OrderService {
 
             Orders order = new Orders();
             order.setCustomer(authenticatedCustomer);
-            order.setStatus("SHIPPED"); // Change to Shipping or Delivered for testing.
+            order.setStatus("Processing"); // Change to Shipping or Delivered for testing.
             order.setTimestamp(orderRequest.getTimestamp());
             order.setTotalAmount(orderRequest.getTotalAmount());
 
@@ -98,6 +98,25 @@ public class OrderService {
         }
 
         return CompletableFuture.completedFuture(order.getStatus());
+    }
+
+    /**
+     * Get Order By ID
+     */
+    @Async
+    public CompletableFuture<Orders> getOrderById(Long orderId, String username) {
+
+        Customer customer = customerRepository.findByUsername(username)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with username: " + username));
+
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
+
+        if (!order.getCustomer().getCustomerId().equals(customer.getCustomerId())) {
+            throw new AccessDeniedException("You do not have permission to access this order.");
+        }
+
+        return CompletableFuture.completedFuture(order);
     }
 
     /**

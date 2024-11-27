@@ -39,6 +39,7 @@ public class OrderController {
     }
 
 
+
     // Create Order API
     @PostMapping("/place")
     public ResponseEntity<OrderStatusResponse> createOrder(@RequestBody OrderRequest orderRequest) {
@@ -76,6 +77,20 @@ public class OrderController {
             throw new InvalidOrder("Invalid Order Id");
         }
     }
+
+    @GetMapping("/{order_id}")
+    public ResponseEntity<Orders> getOrderById(@PathVariable Long order_id) throws ExecutionException, InterruptedException {
+        try {
+            String username = getAuthenticatedUsername();
+
+            Orders order = orderService.getOrderById(order_id, username).get();
+
+            return new ResponseEntity<>(order, HttpStatus.OK);
+        } catch (ExecutionException ex) {
+            throw new InvalidOrder("Invalid Order Id");
+        }
+    }
+
     @PutMapping("/update/{order_id}")
     public ResponseEntity<Orders> updateOrder(@PathVariable Long order_id, @RequestBody OrderRequest orderRequest) throws ExecutionException, InterruptedException {
         try {
