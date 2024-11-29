@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.example.ordermanagement.constants.ErrorCodes.INVALID_REQUEST_OR_ROUTE;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class CustomErrorController implements ErrorController {
 
     /**

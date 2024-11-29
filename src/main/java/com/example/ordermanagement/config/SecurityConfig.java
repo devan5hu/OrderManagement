@@ -18,7 +18,7 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig{
+public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -32,12 +32,14 @@ public class SecurityConfig{
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/login" , "/api/register", "/error", "/api/warehouse/update-status/{orderId}").permitAll() // Open the register endpoint
-                        .anyRequest().authenticated() // Protect all other endpoints
+                        .requestMatchers("/api/login", "/api/register", "/error", "/api/warehouse/update-status/{orderId}")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling((exception) ->exception.accessDeniedPage("/error/404"));
+                .exceptionHandling(exception -> exception.accessDeniedPage("/error/404"));
 
         return http.build();
     }
@@ -50,12 +52,15 @@ public class SecurityConfig{
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        //Make the below setting as * to allow connection from any hos
-        corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000"));
+        corsConfiguration.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "http://ec2-15-206-127-180.ap-south-1.compute.amazonaws.com"
+        ));
         corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         corsConfiguration.setAllowCredentials(true);
-        corsConfiguration.setAllowedHeaders(List.of("*"));
+        corsConfiguration.setAllowedHeaders(List.of("*")); // Or specify specific headers like "Authorization", "Content-Type"
         corsConfiguration.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
         return source;

@@ -12,6 +12,7 @@ import java.util.Map;
 import static com.example.ordermanagement.constants.ErrorCodes.ACTION_SUCCESS;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/warehouse")
 public class WarehouseController {
 

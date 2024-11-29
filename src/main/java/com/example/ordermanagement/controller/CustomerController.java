@@ -22,6 +22,7 @@ import static com.example.ordermanagement.constants.ErrorCodes.ACTION_SUCCESS;
 import static com.example.ordermanagement.constants.GeneralCodes.BEARER_TOKEN;
 
 @RestController
+@CrossOrigin(origins = "*")
 public class CustomerController {
 
     @Autowired

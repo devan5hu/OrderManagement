@@ -41,6 +41,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Authentication authentication = getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
+            String origin = request.getHeader("Origin");
+            if (origin == null) {
+                origin = "*";
+            }
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+            response.setHeader("Access-Control-Max-Age", "3600");
+            response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With, remember-me");
             filterChain.doFilter(request, response);
         }catch (InvalidTokenException e) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403 Forbidden for invalid token
